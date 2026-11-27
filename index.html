@@ -192,7 +192,7 @@ function buildModel(tb,tm){
  const rig=new THREE.Group();rig.position.y=-PY;tiltG.add(rig);
  const steel=new THREE.MeshStandardMaterial({color:C('#c4c8ce'),metalness:1,roughness:1,roughnessMap:texNoise(256,32,.30,.02,{streak:.20}),envMapIntensity:1.3});
  const steel2=new THREE.MeshStandardMaterial({color:C('#8d9199'),metalness:1,roughness:.38});
- const shaft=new THREE.Mesh(mkGeo(latheData([[0,-.04],[.0042,-.04],[.0042,.0215],[0,.0215]],24)),steel);shaft.castShadow=true;rig.add(shaft);
+ const shaft=new THREE.Mesh(mkGeo(latheData([[0,-.04],[.0062,-.04],[.0062,.0215],[0,.0215]],24)),steel);shaft.castShadow=true;rig.add(shaft);
  const ferr=new THREE.Mesh(mkGeo(latheData([[0,.0140],[.0138,.0140],[.0151,.0153],[.0151,.0215],[0,.0215]],32)),steel2);ferr.castShadow=true;rig.add(ferr);
  const kp=[[0,.0205],[.034,.0205],[.0384,.0212],[.0397,.0234],[.0404,.0300],[.0436,.0560],[.0470,.0840],[.0490,.1040],[.0497,.1130]];
  for(let a=10;a<=90;a+=10){const t=a*Math.PI/180;kp.push([.0497*Math.cos(t),.113+.0403*Math.sin(t)])}
@@ -302,7 +302,7 @@ function drawMenu(t){
  g.textAlign='left';g.font='700 20px "JetBrains Mono",monospace';g.fillStyle='#8a8272';g.fillText('CRÉDITOS',VX+28,486);
  g.font='700 64px "JetBrains Mono",monospace';g.fillStyle='#ece4d0';g.fillText('03',VX+28,544);
  g.textAlign='right';g.font='700 20px "JetBrains Mono",monospace';g.fillStyle=G.ok?'#7dff7a':'#8a8272';g.fillText(G.ok?'● JOGÁVEL':'● SEM JOGO',VX+VW-28,486);
- g.fillStyle='#8a8272';g.font='700 16px "JetBrains Mono",monospace';g.fillText('MANCHE ↑↓  ESCOLHER',VX+VW-28,534);g.fillText('QUALQUER BOTÃO  JOGAR',VX+VW-28,560);
+ g.fillStyle='#8a8272';g.font='700 16px "JetBrains Mono",monospace';g.fillText('MANCHE ↑↓  ESCOLHER',VX+VW-28,534);g.fillText('BOTÃO VERMELHO  JOGAR',VX+VW-28,560);
  g.textAlign='left';g.fillStyle='rgba(236,228,208,.35)';g.fillText('toque na tela também funciona',VX+28,604);
  g.restore();g.fillStyle='rgba(0,0,0,.14)';for(let y=0;y<741;y+=4)g.fillRect(0,y,1280,2);
  const vg=g.createRadialGradient(640,370,260,640,370,780);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.4)');g.fillStyle=vg;g.fillRect(0,0,1280,741);
@@ -357,7 +357,7 @@ const P0b=P0.clone(),Tb=T.clone(),tv_=new THREE.Vector3();let fitPos=null;
 let st='off',onT=0,zT=0;
 function poses(){const t=new THREE.PerspectiveCamera();t.position.copy(P0);t.lookAt(T);q0.copy(t.quaternion);
  const tv=Math.tan(cam.fov*Math.PI/360),d=Math.max((SH/2)/tv,(SW/2)/(tv*cam.aspect));P1.copy(Cs).addScaledVector(NRM,d);t.position.copy(P1);t.lookAt(Cs);q1.copy(t.quaternion);
- if(st==='off'||st==='boot'){cam.position.copy(P0);cam.quaternion.copy(q0)}}
+ if(st==='off'||st==='boot'||st==='menu'||st==='down'){cam.position.copy(P0);cam.quaternion.copy(q0)}}
 
 function fitCab(){const a=cam.aspect;
  if(!fitPos){cam.fov=a<1.79?2*Math.atan(Math.tan(17*Math.PI/180)*1.79/a)*180/Math.PI:34;return}
@@ -373,12 +373,19 @@ function resize(){const w=innerWidth,h=innerHeight,a=w/h;R.setSize(w,h,false);ca
 addEventListener('resize',resize);resize();
 /* ligar → zoom → jogo */
 function power(){if(st!=='off')return;st='boot';onT=0;chime();setTimeout(()=>{if(st==='boot'){st='menu';tick(660,.06,.04)}},1500)}
+function powerOff(){if(st!=='boot'&&st!=='menu')return;st='down';onT=Math.min(onT,BOOT);launched=false;tick(260,.14,.05);tick(180,.22,.04)}   /* botão branco DIREITO: desliga (a imagem encolhe até virar um ponto) */
+/* o jogo avisa (postMessage) quando o jogador escolhe SAIR: a câmera se afasta da tela, o inverso da aproximação */
+function exitGame(){if(st!=='live'&&st!=='enter')return;$('cut').style.opacity=1;setTimeout(()=>{document.body.classList.remove('live');$('game').src='about:blank';launched=false;st='unzoom';zT=0;cam.position.copy(P1);cam.quaternion.copy(q1);$('cut').style.opacity=0;try{window.focus()}catch(e){}},200)}
+addEventListener('message',e=>{const d=e.data;if(d&&d.fliperama==='sair'&&e.source===$('game').contentWindow)exitGame()});
 function enter(){$('cut').style.opacity=1;setTimeout(()=>{st='live';document.body.classList.add('live');try{$('game').contentWindow.focus()}catch(e){}$('cut').style.opacity=0},200)}
 /* interação */
 const ray=new THREE.Raycaster(),nd=new THREE.Vector2(),ptr=new Map();
 function pick(e){const r=gl.getBoundingClientRect();nd.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(nd,cam);const h=ray.intersectObjects(inter,false);return h.length?h[0].object.userData:null}
-function hold(b,on){b.down=on?1:0;tick(on?(b.white?520:330):220,.04,.04);if(on){if(b.white&&st==='off')power();else if(st==='menu')launch()}}
- gl.addEventListener('pointerdown',e=>{if(st==='live'||st==='zoom')return;const u=pick(e);if(!u){if(st==='menu')screenTap(e);return}gl.setPointerCapture(e.pointerId);
+const isLeftW=b=>b.white&&b.base.x<-.06;   /* dos dois botões brancos, o da esquerda (x menor) liga e o da direita desliga */
+function hold(b,on){b.down=on?1:0;tick(on?(b.white?520:330):220,.04,.04);if(!on)return;
+  if(b.white){if(isLeftW(b)){if(st==='off')power()}else{if(st==='boot'||st==='menu')powerOff()}}   /* ligado: o esquerdo não faz nada; desligado: o direito não faz nada */
+  else if(st==='menu')launch()}
+ gl.addEventListener('pointerdown',e=>{if(st==='live'||st==='zoom'||st==='enter'||st==='unzoom')return;const u=pick(e);if(!u){if(st==='menu')screenTap(e);return}gl.setPointerCapture(e.pointerId);
   if(u.b){hold(u.b,1);ptr.set(e.pointerId,{b:u.b})}else if(u.stick){tick(180,.05,.04);js.grab=true;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,ox:js.x,oz:js.z,s:stickScale()})}});
  gl.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);
   if(p&&!p.b){const t={x:p.ox+(e.clientX-p.x)/p.s.kx,z:p.oz+(e.clientY-p.y)/p.s.kz};gateClamp(t);js.tx=t.x;js.tz=t.z}
@@ -391,10 +398,12 @@ const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 let last=0,tm=0;
 function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000||0);last=n;tm+=dt;
  for(const b of btns){b.press+=(b.down-b.press)*Math.min(1,dt*28);b.cap.position.copy(b.base).addScaledVector(NG,-b.depth*b.press);
-  const tg=b.white?(st==='off'?.15+.15*Math.sin(tm*4)+b.press*.6:.9):b.press*.9;b.m.emissiveIntensity+=(tg-b.m.emissiveIntensity)*Math.min(1,dt*20)}
+  const tg=b.white?(isLeftW(b)?(st==='off'?.15+.15*Math.sin(tm*4):.1):(st==='off'||st==='down'?.03:.55+.1*Math.sin(tm*3)))+b.press*.6:b.press*.9;b.m.emissiveIntensity+=(tg-b.m.emissiveIntensity)*Math.min(1,dt*20)}
   stickStep(dt);setTilt(js.x,js.z);
- if(st!=='off'){glass.visible=true;onT+=dt;glow.intensity=Math.min(.9,Math.max(0,onT-.35)*1.2);drawScreen(tm)}
+ if(st==='down'){onT-=dt*1.5;glow.intensity=Math.max(0,glow.intensity-dt*2.5);drawScreen(tm);if(onT<=0){onT=0;st='off';glow.intensity=0;drawOff()}}
+  else if(st!=='off'){glass.visible=true;onT+=dt;glow.intensity=Math.min(.9,Math.max(0,onT-.35)*1.2);drawScreen(tm)}
  if(st==='zoom'){zT+=dt;const t=Math.min(1,zT/1.9),e=ease(t);cam.position.lerpVectors(P0,P1,e);cam.quaternion.copy(q0).slerp(q1,e);if(t>=1){st='enter';enter()}}
+  if(st==='unzoom'){zT+=dt;const t=Math.min(1,zT/1.9),e=ease(1-t);cam.position.lerpVectors(P0,P1,e);cam.quaternion.copy(q0).slerp(q1,e);if(t>=1){st='menu';cam.position.copy(P0);cam.quaternion.copy(q0)}}
  R.render(scene,cam)}
 requestAnimationFrame(loop);
 </script></body></html>
