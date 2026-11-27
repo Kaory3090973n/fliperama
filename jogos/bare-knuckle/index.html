@@ -291,7 +291,9 @@ const inMatch=()=>['cd','fight','rend','clash','down'].includes(S);
 function esc(){if(!$('optp').classList.contains('hide')){show('optp',0);return}if(!$('ctlp').classList.contains('hide')){show('ctlp',0);return}if(inMatch())setPause(!paused)}
 $('pcont').onclick=()=>setPause(false);$('popt').onclick=()=>show('optp',1);$('oback').onclick=()=>show('optp',0);
 $('pz').onclick=()=>{if(inMatch())setPause(!paused)};
-$('sair').onclick=()=>{try{(window.top||window).location.href='../../index.html'}catch(e){location.href='../../index.html'}};   /* volta ao fliperama */
+/* SAIR: dentro do fliperama avisa a página-mãe (que afasta a câmera da tela); se ninguém responder, ou se o jogo estiver aberto sozinho, volta pela página ../../index.html */
+$('sair').onclick=()=>{const back=()=>{try{(window.top||window).location.href='../../index.html'}catch(e){location.href='../../index.html'}};
+ if(window.parent&&window.parent!==window){try{window.parent.postMessage({fliperama:'sair'},'*')}catch(e){}setTimeout(back,900)}else back()};
 $('pexit').onclick=()=>{setPause(false);P=mk(0,-1.4);E=mk(1,1.4);P.o=E;E.o=P;S='menu';train=false;$('hud').classList.add('hide');$('end').classList.add('hide');$('menu').classList.remove('hide');$('big').textContent=''};
 P=mk(0,-1.4);E=mk(1,1.4);P.o=E;E.o=P;$('hud').classList.add('hide');requestAnimationFrame(loop);
 </script></body></html>
