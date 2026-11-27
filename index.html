@@ -203,7 +203,7 @@ function buildModel(tb,tm){
  washer=new THREE.Mesh(mkGeo(latheData(WASH,48)),rub);washer.position.y=WY;washer.castShadow=washer.receiveShadow=true;axisG.add(washer);
  const hitS=new THREE.Mesh(new THREE.SphereGeometry(.056,14,10),hm());hitS.position.copy(knobC.position);rig.add(hitS);
  knob.userData.stick=hitS.userData.stick=1;inter.push(knob,hitS);
- piv=tiltG;setTilt(0,0)}
+ piv=tiltG;setTilt(0,0);startBack()}
 
  Promise.all([loadTex(TEX.base,true),loadTex(TEX.mr,false)]).then(t=>buildModel(grain(t[0],.04,false),grain(t[1],.05,true)));
 /* tela (encaixada no vão da tela do modelo) */
@@ -309,7 +309,7 @@ function drawMenu(t){
  menuDirty=true}
 function menuMove(d){if(!GAMES.length)return;sel=(sel+d+GAMES.length)%GAMES.length;tick(900,.03,.03)}
 function navKey(k){if(st!=='menu')return;if(k==='u')menuMove(-1);else if(k==='d')menuMove(1)}
-function launch(){if(st!=='menu')return;const G=GAMES[sel];if(!G||!G.ok||!G.src){shake=.4;tick(110,.15,.06);return}$('game').src=G.src;launched=true;chime();st='zoom';zT=0}
+function launch(){if(st!=='menu')return;const G=GAMES[sel];if(!G||!G.ok||!G.src){shake=.4;tick(110,.15,.06);return}$('game').src=G.src;try{sessionStorage.setItem('fliperama:jogo','1')}catch(e){}launched=true;chime();st='zoom';zT=0}
 function screenTap(e){const r=gl.getBoundingClientRect();nd.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(nd,cam);
  const h=ray.intersectObject(scr,false)[0];if(!h||!h.uv)return;const x=h.uv.x*1280,y=(1-h.uv.y)*741-10;
  for(let r=0;r<8;r++){const i=rowTop+r,ry=RY0+r*(RH+RG);if(i<GAMES.length&&x>=RX&&x<=RX+RW&&y>=ry&&y<=ry+RH){if(i===sel)launch();else{sel=i;tick(900,.03,.03)}return}}}
@@ -355,6 +355,10 @@ function chime(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)(
 const T=new THREE.Vector3(0,.31,.05),P0=new THREE.Vector3(0,.64,1.62),P1=new THREE.Vector3(),q0=new THREE.Quaternion(),q1=new THREE.Quaternion(),Cs=SC.clone().addScaledVector(NRM,.004);
 const P0b=P0.clone(),Tb=T.clone(),tv_=new THREE.Vector3();let fitPos=null;
 let st='off',onT=0,zT=0;
+/* voltou de um jogo (o jogo recarregou esta página em vez de avisar): toca o afastamento da tela com o fliperama já ligado */
+let pendingBack=false;try{pendingBack=sessionStorage.getItem('fliperama:jogo')==='1';sessionStorage.removeItem('fliperama:jogo')}catch(e){}
+if(pendingBack)$('cut').style.opacity=1;   /* cobre a tela até o modelo carregar */
+function startBack(){if(!pendingBack)return;pendingBack=false;poses();st='unzoom';zT=0;onT=BOOT+1;glass.visible=true;glow.intensity=.9;cam.position.copy(P1);cam.quaternion.copy(q1);$('cut').style.opacity=0;try{window.focus()}catch(e){}}
 function poses(){const t=new THREE.PerspectiveCamera();t.position.copy(P0);t.lookAt(T);q0.copy(t.quaternion);
  const tv=Math.tan(cam.fov*Math.PI/360),d=Math.max((SH/2)/tv,(SW/2)/(tv*cam.aspect));P1.copy(Cs).addScaledVector(NRM,d);t.position.copy(P1);t.lookAt(Cs);q1.copy(t.quaternion);
  if(st==='off'||st==='boot'||st==='menu'||st==='down'){cam.position.copy(P0);cam.quaternion.copy(q0)}}
@@ -375,7 +379,7 @@ addEventListener('resize',resize);resize();
 function power(){if(st!=='off')return;st='boot';onT=0;chime();setTimeout(()=>{if(st==='boot'){st='menu';tick(660,.06,.04)}},1500)}
 function powerOff(){if(st!=='boot'&&st!=='menu')return;st='down';onT=Math.min(onT,BOOT);launched=false;tick(260,.14,.05);tick(180,.22,.04)}   /* botão branco DIREITO: desliga (a imagem encolhe até virar um ponto) */
 /* o jogo avisa (postMessage) quando o jogador escolhe SAIR: a câmera se afasta da tela, o inverso da aproximação */
-function exitGame(){if(st!=='live'&&st!=='enter')return;$('cut').style.opacity=1;setTimeout(()=>{document.body.classList.remove('live');$('game').src='about:blank';launched=false;st='unzoom';zT=0;cam.position.copy(P1);cam.quaternion.copy(q1);$('cut').style.opacity=0;try{window.focus()}catch(e){}},200)}
+function exitGame(){if(st!=='live'&&st!=='enter')return;try{sessionStorage.removeItem('fliperama:jogo')}catch(e){}$('cut').style.opacity=1;setTimeout(()=>{document.body.classList.remove('live');$('game').src='about:blank';launched=false;st='unzoom';zT=0;cam.position.copy(P1);cam.quaternion.copy(q1);$('cut').style.opacity=0;try{window.focus()}catch(e){}},200)}
 addEventListener('message',e=>{const d=e.data;if(d&&d.fliperama==='sair'&&e.source===$('game').contentWindow)exitGame()});
 function enter(){$('cut').style.opacity=1;setTimeout(()=>{st='live';document.body.classList.add('live');try{$('game').contentWindow.focus()}catch(e){}$('cut').style.opacity=0},200)}
 /* interação */
