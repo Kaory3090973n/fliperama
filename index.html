@@ -360,7 +360,8 @@ let pendingBack=false;try{pendingBack=sessionStorage.getItem('fliperama:jogo')==
 if(pendingBack)$('cut').style.opacity=1;   /* cobre a tela até o modelo carregar */
 function startBack(){if(!pendingBack)return;pendingBack=false;poses();st='unzoom';zT=0;onT=BOOT+1;glass.visible=true;glow.intensity=.9;cam.position.copy(P1);cam.quaternion.copy(q1);$('cut').style.opacity=0;try{window.focus()}catch(e){}}
 function poses(){const t=new THREE.PerspectiveCamera();t.position.copy(P0);t.lookAt(T);q0.copy(t.quaternion);
- const tv=Math.tan(cam.fov*Math.PI/360),d=Math.max((SH/2)/tv,(SW/2)/(tv*cam.aspect));P1.copy(Cs).addScaledVector(NRM,d);t.position.copy(P1);t.lookAt(Cs);q1.copy(t.quaternion);
+ /* encaixe final: a tela do fliperama PREENCHE a janela inteira (modo "cover": usa o menor recuo, então nunca sobra a borda do gabinete nos lados nem em cima/embaixo; o que passar da proporção da janela é cortado). 1% de folga para esconder a moldura. */
+  const tv=Math.tan(cam.fov*Math.PI/360),FIT=.99,dh=(SH*FIT/2)/tv,dw=(SW*FIT/2)/(tv*cam.aspect),d=cam.aspect<1?Math.max(dh,dw):Math.min(dh,dw);   /* em pé (celular) mantém a tela inteira visível */P1.copy(Cs).addScaledVector(NRM,d-.002);t.position.copy(P1);t.lookAt(Cs);q1.copy(t.quaternion);
  if(st==='off'||st==='boot'||st==='menu'||st==='down'){cam.position.copy(P0);cam.quaternion.copy(q0)}}
 
 function fitCab(){const a=cam.aspect;
