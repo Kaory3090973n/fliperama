@@ -110,7 +110,7 @@ function setTilt(x,z){
  const tx=x*MAXT,tz=z*MAXT,a=Math.hypot(tx,tz);
  if(a<1e-5){tiltG.quaternion.set(0,0,0,1);washer.position.x=0;washer.position.z=0;return}
  _ax.set(tz,0,-tx).normalize();tiltG.quaternion.setFromAxisAngle(_ax,a);
- const lat=(WY+.0023-PY)*Math.sin(a);   /* a arruela desliza sobre o painel acompanhando o eixo */
+ const lat=(WY+.0023-PY)*Math.sin(a)*.35;   /* a arruela desliza sobre o painel acompanhando o eixo */
  washer.position.x=tx/a*lat;washer.position.z=tz/a*lat}
 /* quantos pixels de tela valem uma unidade de inclinação (o manche acompanha o ponteiro 1:1) */
 function stickScale(){
@@ -142,7 +142,7 @@ function grain(tex,amp,isRough){
  const id=g.getImageData(0,0,w,h),d=id.data;
  for(let i=0;i<d.length;i+=4){const n=(rnd()-.5)*2*amp;
   if(isRough)d[i+1]=Math.max(0,Math.min(255,d[i+1]+n*255));
-  else{const k=1+n;d[i]=Math.min(255,d[i]*k);d[i+1]=Math.min(255,d[i+1]*k);d[i+2]=Math.min(255,d[i+2]*k)}}
+  else{const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]),k=(1+n)*((mx<90&&mx-mn<14)?.66:1);d[i]=Math.min(255,d[i]*k);d[i+1]=Math.min(255,d[i+1]*k);d[i+2]=Math.min(255,d[i+2]*k)}}   /* gabinete: cinza quase preto */
  g.putImageData(id,0,0);
  const t=new THREE.CanvasTexture(c);t.flipY=false;t.encoding=tex.encoding;t.anisotropy=Math.min(16,R.capabilities.getMaxAnisotropy());return t}
 /* remove do corpo o "toco" quebrado do eixo do joystick (o eixo novo ocupa o lugar) */
@@ -161,7 +161,7 @@ function cleanBody(g){
 const BTN=[{k:'r',c:[0.04830,0.11482,0.21726]},{k:'r',c:[0.12898,0.11472,0.21751]},{k:'r',c:[0.20801,0.11447,0.21802]},{k:'r',c:[0.28894,0.11489,0.21689]},{k:'r',c:[0.04850,0.14591,0.12973]},{k:'r',c:[0.12876,0.14596,0.12946]},{k:'r',c:[0.20841,0.14608,0.12970]},{k:'r',c:[0.28917,0.14600,0.12972]},{k:'w',c:[-0.10223,0.15077,0.10973]},{k:'w',c:[-0.02485,0.14993,0.11091]}];
 /* perfil do botão (r,y): flange, parede cônica, borda arredondada e topo côncavo */
 const CAPP=[[0,0],[.0262,0],[.0262,.0019],[.0259,.0026],[.0251,.0030],[.0238,.0031],[.0235,.0037],[.0224,.0068],[.0215,.0090],[.0210,.0096],[.0202,.0100],[.0193,.0102],[.0172,.0100],[.0142,.0093],[.0102,.0085],[.0052,.0079],[0,.0077]];
-const WASH=[[0,0],[.0268,0],[.0275,.0007],[.0275,.0022],[.0269,.0029],[.0140,.0032],[.0090,.0046],[.0052,.0046],[0,.0046]];
+const WASH=[[0,-.0047],[.0590,-.0047],[.0596,-.0040],[.0596,.0019],[.0590,.0025],[.0140,.0026],[.0105,.0036],[.0078,.0036],[0,.0036]];   /* arruela móvel: raio 5,9 cm (disco fixo = 5,6 cm), baixa e plana; desliza só 35% para nunca descobrir o disco de baixo */
 function buildModel(tb,tm){
  const S=MODEL.stick;
  const bodyM=new THREE.MeshStandardMaterial({map:tb,roughnessMap:tm,metalnessMap:tm,roughness:1,metalness:1});
