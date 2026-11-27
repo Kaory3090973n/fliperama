@@ -265,8 +265,8 @@ function press(n){if(paused||S!=='fight'||!n)return;if(n==='dash'){dash(P,(keys.
 let introOn=true,introGo=false,introArmed=false;
 /* a contagem só começa quando o jogo está visível: o fliperama avisa (mensagem 'visivel'); sozinho ou sem aviso, começa por conta própria */
 function armIntro(wait){if(introArmed)return;introArmed=true;setTimeout(()=>{$('intro').classList.add('start');setTimeout(()=>{introGo=true},4000)},wait)}
-addEventListener('message',e=>{if(e.data&&e.data.fliperama==='visivel')armIntro(1900)});
-if(window.parent===window)armIntro(1900);else setTimeout(()=>armIntro(0),4500);
+addEventListener('message',e=>{if(e.data&&e.data.fliperama==='visivel')armIntro(4200)});
+if(window.parent===window)armIntro(4200);else setTimeout(()=>armIntro(0),4500);
 function leaveIntro(){if(!introOn||!introGo)return;introOn=false;$('intro').classList.add('out');setTimeout(()=>$('intro').classList.add('hide'),650)}
 addEventListener('pointerdown',leaveIntro);
 addEventListener('keydown',e=>{if(introOn){leaveIntro();return}const k=e.key.toLowerCase();if(k==='escape'){esc();return}if(k===' '||k==='alt'||k==='control')e.preventDefault();if(e.repeat)return;keys[k]=1;if(k===' ')mash();if(k==='n'||k==='control')press('kickL');if(k==='m'||k==='alt')press('kickH');if(k==='l')press('dash');
