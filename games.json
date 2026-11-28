@@ -1,12 +1,41 @@
 [
-  {
-    "pasta": "bare-knuckle",
-    "nome": "Bare Knuckle",
-    "ordem": 1,
-    "fonte": "Fraunces",
-    "estilo": "italic 900",
-    "cor": "#d4382c",
-    "cor2": "#ece4d0",
-    "preview": "brawl"
-  }
+ {
+  "pasta": "bare-knuckle",
+  "nome": "Bare Knuckle",
+  "cor": "#d4382c",
+  "cor2": "#ece4d0",
+  "preview": "brawl"
+ },
+ {
+  "pasta": "rei-da-pradaria",
+  "nome": "Rei da Pradaria",
+  "cor": "#e8b04a",
+  "cor2": "#ece4d0",
+  "preview": "space",
+  "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "junimo-kart",
+  "nome": "Junimo Kart",
+  "cor": "#7be05a",
+  "cor2": "#ece4d0",
+  "preview": "race",
+  "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "bad-ice-cream",
+  "nome": "Bad Ice-Cream",
+  "cor": "#ff7ad0",
+  "cor2": "#ece4d0",
+  "preview": "maze",
+  "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "brotato",
+  "nome": "Brotato",
+  "cor": "#c98a4a",
+  "cor2": "#ece4d0",
+  "preview": "generic",
+  "fonte": "Press Start 2P"
+ }
 ]
