@@ -274,6 +274,10 @@ addEventListener('keydown',e=>{if(introOn){leaveIntro();return}const k=e.key.toL
  if(k==='j')press(atkFor('L'));if(k==='k')press(atkFor('R'));if(k==='u')press('hookL');if(k==='i')press('upper');if(k==='q'||k==='e')press('hay');
  });
 addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);addEventListener('blur',()=>keys={});
+/* avisa o fliperama (quando o jogo roda dentro dele) quais teclas estão apertadas, para animar botões e manche */
+{const fp=(k,d)=>{if(parent!==window)try{parent.postMessage({fliperama:'tecla',k,d},'*')}catch(_){}};
+ addEventListener('keydown',e=>{if(!e.repeat)fp(e.key.toLowerCase(),1)},true);addEventListener('keyup',e=>fp(e.key.toLowerCase(),0),true);addEventListener('blur',()=>fp('*',0));
+ addEventListener('mousedown',e=>fp(e.button===0?'j':e.button===2?'k':'q',1),true);addEventListener('mouseup',e=>fp(e.button===0?'j':e.button===2?'k':'q',0),true)}
 addEventListener('mousedown',e=>{if(touch||e.target.closest('button'))return;if(e.button===0)press(atkFor('L'));if(e.button===2)press(atkFor('R'));if(e.button===1){e.preventDefault();press('hay')}});
 addEventListener('contextmenu',e=>e.preventDefault());
 function setZoom(z){zoom=clamp(Math.round(z*100)/100,.6,1.6);$('zm').value=zoom;$('zv').textContent=Math.round(zoom*100)+'%'}
