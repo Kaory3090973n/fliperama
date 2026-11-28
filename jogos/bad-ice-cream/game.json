@@ -1,57 +1,7 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bad Ice-Cream</title><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"><style>html,body{margin:0;height:100%;background:#000;overflow:hidden;display:grid;place-items:center}canvas{image-rendering:pixelated;background:#111}</style></head><body><canvas id="c"></canvas><script>
-/* ===== base comum dos jogos do fliperama: tela 640x370, teclado (WASD + I J K L / setas), pausa, SAIR e avisos ao fliperama ===== */
-const cv=document.getElementById('c'),g=cv.getContext('2d'),W=640,H=370;cv.width=W;cv.height=H;
-const fit=()=>{const s=Math.min(innerWidth/W,innerHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px'};addEventListener('resize',fit);fit();
-const K={},par=parent!==window,F="'Press Start 2P',monospace";let S='title',T=0,sc=0,pm=0,HI=0,OM='',AC;
-const fp=(k,d)=>{if(par)try{parent.postMessage({fliperama:'tecla',k,d},'*')}catch(_){}};
-const rc=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
-const tx=(s,x,y,z,c,a)=>{g.font=z+'px '+F;g.textAlign=a||'left';g.textBaseline='middle';g.fillStyle='#000';g.fillText(s,x+1,y+1);g.fillStyle=c||'#fff';g.fillText(s,x,y)};
-const bp=(f,d,v,t)=>{try{AC=AC||new AudioContext();const o=AC.createOscillator(),n=AC.createGain(),a=AC.currentTime;o.type=t||'square';o.frequency.value=f;n.gain.setValueAtTime(v||.04,a);n.gain.exponentialRampToValueAtTime(.0001,a+d);o.connect(n);n.connect(AC.destination);o.start(a);o.stop(a+d)}catch(e){}};
-const mv=()=>[(K.d||0)-(K.a||0),(K.s||0)-(K.w||0)],aim=()=>[(K.l||K.arrowright||0)-(K.j||K.arrowleft||0),(K.k||K.arrowdown||0)-(K.i||K.arrowup||0)],rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const back=()=>{try{(window.top||window).location.href='../../index.html'}catch(e){location.href='../../index.html'}};
-const sair=()=>{if(par){try{parent.postMessage({fliperama:'sair'},'*')}catch(e){}setTimeout(back,900)}else back()};
-function over(m){OM=m||'FIM DE JOGO';S='over';if(sc>HI){HI=sc;try{localStorage.setItem('hi:'+G.id,HI)}catch(e){}}bp(150,.5,.07,'sawtooth')}
-const OK=k=>k==='enter'||k===' '||k==='j';
-function kd(k){
- if(S==='title'){if(OK(k)){S='play';G.init();bp(660,.1)}else if(k==='escape')sair()}
- else if(S==='play'){if(k==='escape'||k==='p'){S='pause';pm=0}else if(G.key)G.key(k)}
- else if(S==='pause'){if(k==='w'||k==='s'||k==='arrowup'||k==='arrowdown')pm^=1;else if(OK(k)){if(pm)sair();else S='play'}else if(k==='escape')S='play'}
- else if(S==='over'){if(OK(k)){S='play';G.init();bp(660,.1)}else if(k==='escape')sair()}}
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!e.repeat){K[k]=1;fp(k,1);kd(k)}if(k.startsWith('arrow')||k===' ')e.preventDefault()});
-addEventListener('keyup',e=>{const k=e.key.toLowerCase();K[k]=0;fp(k,0)});addEventListener('blur',()=>{for(const k in K)K[k]=0;fp('*',0)});
-let L=0;function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-L)/1e3||0);L=n;T+=dt;g.imageSmoothingEnabled=false;
- if(S==='play')G.update(dt);G.draw();
- if(S!=='play'){rc(0,0,W,H,'rgba(0,0,0,.66)');const b=Math.floor(T*2)%2;
-  if(S==='title'){tx(G.title,W/2,100,G.title.length>12?24:30,G.col,'center');G.sub.forEach((s,i)=>tx(s,W/2,160+i*18,9,'#cfd6e6','center'));if(b)tx('APERTE J OU ENTER',W/2,250,12,'#fff','center');tx('ESC: SAIR',W/2,330,8,'#8793b8','center');if(HI)tx('RECORDE '+HI,W/2,290,9,'#ffd23a','center')}
-  else if(S==='pause'){tx('PAUSA',W/2,120,24,'#fff','center');['CONTINUAR','SAIR'].forEach((s,i)=>tx((pm===i?'> ':'')+s,W/2,190+i*34,14,pm===i?'#ffd23a':'#8793b8','center'))}
-  else{tx(OM,W/2,110,24,G.col,'center');tx('PONTOS '+sc,W/2,170,14,'#fff','center');tx('RECORDE '+HI,W/2,200,10,'#ffd23a','center');if(b)tx('J: JOGAR DE NOVO',W/2,260,11,'#fff','center');tx('ESC: SAIR',W/2,300,9,'#8793b8','center')}}}
-const TS=26,CW=22,RW=12,OX=34,OY=46,FR=['#d93829','#b66cff','#ffd23a','#7be05a','#ff8a2a'];
-const G={id:'badicecream',title:'BAD ICE-CREAM',col:'#ff7ad0',sub:['WASD: ANDAR','J: CRIAR / QUEBRAR GELO','COLETE TODAS AS FRUTAS'],
-init(){sc=0;this.lives=3;this.lv=1;this.lvl()},
-lvl(){const m=[];for(let y=0;y<RW;y++){m.push([]);for(let x=0;x<CW;x++)m[y].push(Math.random()<.3?1:(Math.random()<.05?2:0))}
- for(let y=RW-3;y<RW;y++)for(let x=0;x<4;x++)m[y][x]=0;this.m=m;this.px=1;this.py=RW-2;this.fx=1;this.fy=0;this.mt=0;this.ct=0;this.inv=1.5;this.f=[];
- for(let i=0;i<7+this.lv;i++){let x,y;do{x=Math.random()*CW|0;y=Math.random()*RW|0}while(m[y][x]||x<5&&y>RW-4);m[y][x]=0;this.f.push({x:x,y:y,c:FR[i%5]})}
- this.e=[];for(let i=0;i<Math.min(2+this.lv,7);i++){let x,y;do{x=Math.random()*CW|0;y=Math.random()*RW|0}while(m[y][x]||x<8&&y>RW-5);this.e.push({x:x,y:y,t:Math.random()})}},
-free(x,y){return x>=0&&y>=0&&x<CW&&y<RW&&!this.m[y][x]},
-update(dt){this.mt-=dt;this.ct-=dt;this.inv-=dt;const[mx,my]=mv();
- if(this.mt<=0&&(mx||my)){const dx=mx?mx:0,dy=mx?0:my;this.fx=dx;this.fy=dy;if(this.free(this.px+dx,this.py+dy)){this.px+=dx;this.py+=dy;this.mt=.13;const i=this.f.findIndex(f=>f.x===this.px&&f.y===this.py);if(i>=0){this.f.splice(i,1);sc+=100;bp(900,.1,.04);if(!this.f.length){this.lv++;sc+=500;bp(1200,.4,.05);this.lvl();return}}}else this.mt=.05}
- for(const e of this.e){e.t-=dt;if(e.t>0)continue;e.t=Math.max(.16,.34-this.lv*.02);const d=[[1,0],[-1,0],[0,1],[0,-1]].filter(q=>this.free(e.x+q[0],e.y+q[1])).sort((a,b)=>Math.hypot(this.px-e.x-a[0],this.py-e.y-a[1])-Math.hypot(this.px-e.x-b[0],this.py-e.y-b[1]));
-  if(d.length){const q=Math.random()<.3?d[Math.random()*d.length|0]:d[0];e.x+=q[0];e.y+=q[1]}}
- if(this.inv<=0)for(const e of this.e)if(e.x===this.px&&e.y===this.py){this.lives--;bp(110,.4,.08,'sawtooth');if(this.lives<=0){over();return}this.px=1;this.py=RW-2;this.inv=2}},
-key(k){if(k!=='j'&&k!==' ')return;if(this.ct>0)return;this.ct=.2;let x=this.px+this.fx,y=this.py+this.fy;
- if(x<0||y<0||x>=CW||y>=RW)return;
- if(this.m[y][x]===1){while(x>=0&&y>=0&&x<CW&&y<RW&&this.m[y][x]===1){this.m[y][x]=0;x+=this.fx;y+=this.fy}bp(300,.15,.05,'sawtooth')}
- else if(!this.m[y][x]){while(this.free(x,y)&&!this.e.some(e=>e.x===x&&e.y===y)&&!this.f.some(f=>f.x===x&&f.y===y)){this.m[y][x]=1;x+=this.fx;y+=this.fy}bp(700,.1,.04)}},
-draw(){rc(0,0,W,H,'#162447');rc(OX-4,OY-4,CW*TS+8,RW*TS+8,'#0e1832');
- for(let y=0;y<RW;y++)for(let x=0;x<CW;x++){const X=OX+x*TS,Y=OY+y*TS,c=this.m[y][x];rc(X,Y,TS,TS,(x+y)%2?'#dff3ff':'#cfe9fa');
-  if(c===1){rc(X+1,Y+1,TS-2,TS-2,'#7fd3f5');rc(X+3,Y+3,TS-8,5,'#c9f0ff');rc(X+1,Y+TS-5,TS-2,4,'#4aa6d0')}
-  else if(c===2){rc(X,Y,TS,TS,'#3a4a7a');rc(X+3,Y+3,TS-6,TS-6,'#55689f')}}
- for(const f of this.f){const X=OX+f.x*TS+TS/2,Y=OY+f.y*TS+TS/2+Math.sin(T*4+f.x)*2;rc(X-7,Y-6,14,14,f.c);rc(X-2,Y-11,4,6,'#3f9a3a');rc(X-4,Y-4,3,3,'rgba(255,255,255,.7)')}
- for(const e of this.e){const X=OX+e.x*TS,Y=OY+e.y*TS;rc(X+4,Y+6,TS-8,TS-8,'#7a3fb5');rc(X+6,Y+2,TS-12,8,'#5a2a8a');rc(X+7,Y+10,4,4,'#fff');rc(X+TS-11,Y+10,4,4,'#fff');rc(X+8,Y+11,2,2,'#c00');rc(X+TS-10,Y+11,2,2,'#c00')}
- if(this.inv<=0||Math.floor(T*12)%2){const X=OX+this.px*TS,Y=OY+this.py*TS;rc(X+7,Y+14,TS-14,TS-14,'#e8b04a');rc(X+9,Y+TS-6,TS-18,4,'#c98a2a');rc(X+4,Y+3,TS-8,13,'#ffd0e8');rc(X+6,Y+1,TS-12,5,'#fff');rc(X+8,Y+8,3,3,'#222');rc(X+TS-11,Y+8,3,3,'#222')}
- tx('VIDAS',16,16,8,'#ff7ad0');for(let i=0;i<this.lives;i++)rc(16+i*16,26,11,11,'#ff7ad0');tx('FASE '+this.lv,W/2,22,10,'#fff','center');
- tx('PONTOS '+sc,W-16,16,8,'#fff','right');tx('FRUTAS '+this.f.length,W-16,30,8,'#ffd23a','right')}};
-
-try{HI=+localStorage.getItem('hi:'+G.id)||0}catch(e){}try{document.fonts.load("10px 'Press Start 2P'")}catch(e){}
-G.init();requestAnimationFrame(loop);
-</script></body></html>
+{
+  "nome": "Bad Ice-Cream",
+  "cor": "#ff7ad0",
+  "cor2": "#ece4d0",
+  "preview": "maze",
+  "fonte": "Press Start 2P"
+}
