@@ -37,5 +37,37 @@
   "cor2": "#ece4d0",
   "preview": "generic",
   "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "altos-odyssey",
+  "nome": "Alto's Odyssey",
+  "cor": "#ffb36b",
+  "cor2": "#ece4d0",
+  "preview": "run",
+  "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "crossy-road",
+  "nome": "Crossy Road",
+  "cor": "#ffd23a",
+  "cor2": "#ece4d0",
+  "preview": "run",
+  "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "build-up-tower",
+  "nome": "Build Up Tower",
+  "cor": "#4de3ff",
+  "cor2": "#ece4d0",
+  "preview": "block",
+  "fonte": "Press Start 2P"
+ },
+ {
+  "pasta": "minhoca",
+  "nome": "Minhoca",
+  "cor": "#7be05a",
+  "cor2": "#ece4d0",
+  "preview": "snake",
+  "fonte": "Press Start 2P"
  }
 ]
