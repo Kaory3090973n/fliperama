@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Build Up Tower</title><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"><style>html,body{margin:0;height:100%;background:#000;overflow:hidden;display:grid;place-items:center}canvas{image-rendering:pixelated;background:#111}</style></head><body><canvas id="c"></canvas><script>
+/* ===== base comum dos jogos do fliperama: tela 640x370, teclado (WASD + I J K L / setas), pausa, SAIR e avisos ao fliperama ===== */
+const cv=document.getElementById('c'),g=cv.getContext('2d'),W=640,H=370;cv.width=W;cv.height=H;
+const fit=()=>{const s=Math.min(innerWidth/W,innerHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px'};addEventListener('resize',fit);fit();
+const K={},par=parent!==window,F="'Press Start 2P',monospace";let S='title',T=0,sc=0,pm=0,HI=0,OM='',AC;
+const fp=(k,d)=>{if(par)try{parent.postMessage({fliperama:'tecla',k,d},'*')}catch(_){}};
+const rc=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+const tx=(s,x,y,z,c,a)=>{g.font=z+'px '+F;g.textAlign=a||'left';g.textBaseline='middle';g.fillStyle='#000';g.fillText(s,x+1,y+1);g.fillStyle=c||'#fff';g.fillText(s,x,y)};
+const bp=(f,d,v,t)=>{try{AC=AC||new AudioContext();const o=AC.createOscillator(),n=AC.createGain(),a=AC.currentTime;o.type=t||'square';o.frequency.value=f;n.gain.setValueAtTime(v||.04,a);n.gain.exponentialRampToValueAtTime(.0001,a+d);o.connect(n);n.connect(AC.destination);o.start(a);o.stop(a+d)}catch(e){}};
+const mv=()=>[(K.d||0)-(K.a||0),(K.s||0)-(K.w||0)],aim=()=>[(K.l||K.arrowright||0)-(K.j||K.arrowleft||0),(K.k||K.arrowdown||0)-(K.i||K.arrowup||0)],rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const back=()=>{try{(window.top||window).location.href='../../index.html'}catch(e){location.href='../../index.html'}};
+const sair=()=>{if(par){try{parent.postMessage({fliperama:'sair'},'*')}catch(e){}setTimeout(back,900)}else back()};
+function over(m){OM=m||'FIM DE JOGO';S='over';if(sc>HI){HI=sc;try{localStorage.setItem('hi:'+G.id,HI)}catch(e){}}bp(150,.5,.07,'sawtooth')}
+const OK=k=>k==='enter'||k===' '||k==='j';
+function kd(k){
+ if(S==='title'){if(OK(k)){S='play';G.init();bp(660,.1)}else if(k==='escape')sair()}
+ else if(S==='play'){if(k==='escape'||k==='p'){S='pause';pm=0}else if(G.key)G.key(k)}
+ else if(S==='pause'){if(k==='w'||k==='s'||k==='arrowup'||k==='arrowdown')pm^=1;else if(OK(k)){if(pm)sair();else S='play'}else if(k==='escape')S='play'}
+ else if(S==='over'){if(OK(k)){S='play';G.init();bp(660,.1)}else if(k==='escape')sair()}}
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!e.repeat){K[k]=1;fp(k,1);kd(k)}if(k.startsWith('arrow')||k===' ')e.preventDefault()});
+addEventListener('keyup',e=>{const k=e.key.toLowerCase();K[k]=0;fp(k,0)});addEventListener('blur',()=>{for(const k in K)K[k]=0;fp('*',0)});
+let L=0;function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-L)/1e3||0);L=n;T+=dt;g.imageSmoothingEnabled=false;
+ if(S==='play')G.update(dt);G.draw();
+ if(S!=='play'){rc(0,0,W,H,'rgba(0,0,0,.66)');const b=Math.floor(T*2)%2;
+  if(S==='title'){tx(G.title,W/2,100,G.title.length>12?24:30,G.col,'center');G.sub.forEach((s,i)=>tx(s,W/2,160+i*18,9,'#cfd6e6','center'));if(b)tx('APERTE J OU ENTER',W/2,250,12,'#fff','center');tx('ESC: SAIR',W/2,330,8,'#8793b8','center');if(HI)tx('RECORDE '+HI,W/2,290,9,'#ffd23a','center')}
+  else if(S==='pause'){tx('PAUSA',W/2,120,24,'#fff','center');['CONTINUAR','SAIR'].forEach((s,i)=>tx((pm===i?'> ':'')+s,W/2,190+i*34,14,pm===i?'#ffd23a':'#8793b8','center'))}
+  else{tx(OM,W/2,110,24,G.col,'center');tx('PONTOS '+sc,W/2,170,14,'#fff','center');tx('RECORDE '+HI,W/2,200,10,'#ffd23a','center');if(b)tx('J: JOGAR DE NOVO',W/2,260,11,'#fff','center');tx('ESC: SAIR',W/2,300,9,'#8793b8','center')}}}
+const BH=22,GY=H-28;
+const G={id:'torre',title:'BUILD UP TOWER',col:'#4de3ff',sub:['J OU ESPACO: SOLTAR O ANDAR','ENCAIXE PERFEITO MANTEM A LARGURA','EMPILHE O MAIS ALTO POSSIVEL'],
+init(){sc=0;this.f=[{x:240,w:160}];this.cut=[];this.cam=0;this.pf=0;this.msg=0;this.nw()},
+nw(){const t=this.f[this.f.length-1];this.cur={x:0,w:t.w,dir:1}},
+key(k){if(k!=='j'&&k!==' ')return;const t=this.f[this.f.length-1],c=this.cur,l=Math.max(c.x,t.x),r=Math.min(c.x+c.w,t.x+t.w);
+ if(r-l<=2){this.cut.push({x:c.x,w:c.w,y:GY-(this.f.length+1)*BH+this.cam,vy:0,i:this.f.length});this.cur=null;bp(120,.4,.07,'sawtooth');setTimeout(()=>{if(S==='play')over('ERROU A TORRE')},500);return}
+ let n;if(Math.abs(c.x-t.x)<5){n={x:t.x,w:t.w};this.pf++;sc+=3;this.msg=1;bp(1100,.15,.05)}else{this.pf=0;n={x:l,w:r-l};const cw=c.w-(r-l);if(cw>0)this.cut.push({x:c.x<t.x?c.x:r,w:cw,y:GY-(this.f.length+1)*BH+this.cam,vy:0,i:this.f.length});bp(500,.08,.04)}
+ this.f.push(n);sc+=1;this.nw()},
+update(dt){const c=this.cur;if(c){c.x+=c.dir*(130+this.f.length*7)*dt;if(c.x<=0){c.x=0;c.dir=1}if(c.x+c.w>=W){c.x=W-c.w;c.dir=-1}}
+ this.msg-=dt;this.cam+=(Math.max(0,this.f.length-9)*BH-this.cam)*Math.min(1,dt*3);for(const p of this.cut){p.vy+=700*dt;p.y+=p.vy*dt}this.cut=this.cut.filter(p=>p.y<H+40)},
+draw(){const u=Math.min(1,this.f.length/40);rc(0,0,W,H,'#'+[Math.round(40-30*u),Math.round(90-60*u),Math.round(160-100*u)].map(v=>v.toString(16).padStart(2,'0')).join(''));
+ for(let i=0;i<5;i++){const x=((i*170-T*8)%780+780)%780-100;rc(x,60+i*30-this.cam*.2%40,90,16,'rgba(255,255,255,.35)')}
+ rc(0,GY+BH-this.cam,W,H,'#2a3a2a');
+ const bl=(b,i,a)=>{const y=GY-(i+1)*BH+this.cam;g.globalAlpha=a;rc(b.x,y,b.w,BH,'hsl('+((i*27)%360)+' 62% 52%)');rc(b.x,y,b.w,3,'rgba(255,255,255,.4)');for(let wx=b.x+8;wx<b.x+b.w-8;wx+=16)rc(wx,y+7,8,8,'#ffe9a0');g.globalAlpha=1};
+ this.f.forEach((b,i)=>bl(b,i,1));for(const p of this.cut)bl(p,p.i,.8);if(this.cur){rc(this.cur.x+this.cur.w/2,0,2,GY-(this.f.length+1)*BH+this.cam,'#222');bl(this.cur,this.f.length,1)}
+ tx('ANDARES '+(this.f.length-1),16,18,10,'#fff');tx('PONTOS '+sc,W-16,18,9,'#ffd23a','right');if(this.msg>0)tx('PERFEITO x'+this.pf+'!',W/2,60,14,'#fff','center')}};
+
+try{HI=+localStorage.getItem('hi:'+G.id)||0}catch(e){}try{document.fonts.load("10px 'Press Start 2P'")}catch(e){}
+G.init();requestAnimationFrame(loop);
+</script></body></html>
